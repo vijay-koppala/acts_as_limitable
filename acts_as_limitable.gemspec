@@ -15,6 +15,9 @@ Gem::Specification.new do |gem|
   gem.summary = "Rate limiting for Rails."
 
   gem.add_runtime_dependency 'rails'
+  gem.add_runtime_dependency 'redis'
+  
+  gem.add_development_dependency 'pry'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'sqlite3'
 

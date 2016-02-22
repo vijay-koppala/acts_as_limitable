@@ -1,14 +1,15 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
 require 'acts_as_limitable'
 require 'logger'
+require 'pry'
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 ActiveRecord::Base.logger = Logger.new(File.join(File.dirname(__FILE__),'debug.log'))
 ActiveRecord::Base.logger.level = Logger::INFO
 
 
-#load(File.dirname(__FILE__) + '/extra/schema.rb')
-#load(File.dirname(__FILE__) + '/extra/models.rb')
+load(File.dirname(__FILE__) + '/extras/schema.rb')
+load(File.dirname(__FILE__) + '/extras/models.rb')
 
 unless [].respond_to?(:freq)
   class Array
