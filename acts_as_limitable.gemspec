@@ -17,10 +17,11 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'rails'
   gem.add_runtime_dependency 'redis'
   
-  gem.add_development_dependency 'pry'
+  gem.add_development_dependency 'byebug'
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'sqlite3'
-
+  gem.add_development_dependency "rspec-rails"
+  
   #gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   #gem.files         = `git ls-files`.split("\n")
   gem.files         = ["lib/acts_as_limitable.rb", "lib/acts_as_limitable/version.rb"]

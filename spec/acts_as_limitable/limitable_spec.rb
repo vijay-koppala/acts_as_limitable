@@ -2,6 +2,7 @@
 
 require File.expand_path('../../spec_helper', __FILE__)
 
+user_id  = Time.now.to_i
 describe ActsAsLimitable::Limitable do
 
   it "can set configuration via Hash" do 
@@ -15,15 +16,35 @@ describe ActsAsLimitable::Limitable do
     lm = MethodConfiguredLimitedModel.create 
 
   end
+
+  context "Can check for different amounts of availability based on a passed block" do 
+    it "will work with 1" do
+      user_id += 1
+      user = User.create(id: user_id, name: "User_#{user_id}", role: "user") 
+      lm = LimitableModel.create(user: user)
+      lm.limited_by_args_val(val: 1) 
+    end
+
+    it "will not work with 10000" do 
+      user_id += 1
+      user = User.create(id: user_id, name: "User_#{user_id}", role: "user") 
+      lm = LimitableModel.create(user: user)
+      expect {lm.limited_by_args_val(val: 10000)}.to raise_error Exception
+    end
+  end
+
 end
+
 
 strategies = [LimitableModel, MethodConfiguredLimitedModel]
 strategies.each do |strat|
   context strat do 
     context "defined limits" do 
       before :each do 
-        @user = User.create(name: "User_#{Time.now.to_i}", role: "user") 
-        @public_user = User.create(name: "User_#{Time.now.to_i}", role: "public_user") 
+        user_id += 1
+        @user = User.create(id: user_id, name: "User_#{user_id}", role: "user") 
+        user_id += 1
+        @public_user = User.create(id: user_id, name: "User_#{user_id}", role: "public_user") 
         puts "\n\nCreate user[#{@user.id}] and public_user[#{@public_user.id}]"
       end
 
@@ -63,16 +84,14 @@ strategies.each do |strat|
         }.to raise_error(Exception)
       end
 
-      it "can load existing state from db" do 
-        100.times do |x|
-          strat.create(user: @user, created_at: (x * 20).seconds.ago) 
+      it "should work for static_methods" do
+        begin 
+          Thread.current[:user] = @public_user
+          strat.static_method
+        ensure
+          Thread.current[:user] = nil
         end
-        @user.reload
-        method = strat.name.underscore.pluralize.to_sym 
-        expect(@user.send(method).size).to eq 100
-        @user.init_limiting 
       end
-
     end
   end
 end

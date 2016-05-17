@@ -10,15 +10,22 @@ class User < ActiveRecord::Base
   has_many :method_configured_limited_models
 
   def init_limiting
-    LimitableModel.init_limiting(self)
-    MethodConfiguredLimitedModel.init_limiting(self)
+    LimitableModel.init_limiting(self, time_field: "at_time")
+    MethodConfiguredLimitedModel.init_limiting(self, time_field: "at_time")
   end
 end
 
 
 module TestMethods 
+  module ClassMethods
+    def static_method
+      puts "static_method"
+    end
+  end
+
   def self.included(base)
     base.belongs_to :user  
+    base.extend ClassMethods                                                                                                                                                  
   end
 
   def limited1;puts "limited1";end
@@ -40,11 +47,13 @@ class MethodConfiguredLimitedModel < ActiveRecord::Base
   limitable_thresholds :limit_resolver
 
   # Specify how the role will be determined at runtime
-  limitable_owner ->(obj){ (User === obj) ? obj : obj.user }   # ->{ Thread.current[:user].role }
+  limitable_owner do |obj, args| 
+    (User === obj) ? obj : (obj.user rescue Thread.current[:user])
+  end   # ->{ Thread.current[:user].role }
 
-  # takes a user_role
+  # takes a user
   def self.limit_resolver(user)
-    case user.role
+    case (user.role rescue 'public_user')
     when "user" 
       { 1.second => 5, 1.hour => 100, 1.day => 1000}
     when "public_user"
@@ -52,7 +61,7 @@ class MethodConfiguredLimitedModel < ActiveRecord::Base
     end
   end
 
-  limitable_methods :limited1, :limited2 
+  limitable_methods :limited1, :limited2, :static_method
 
 end
 
@@ -74,13 +83,24 @@ class LimitableModel < ActiveRecord::Base
                        public_user: { 1.second => 1, 1.hour => 25, 1.day => 100 }
 
   # Specify how the role will be determined at runtime
-  limitable_owner ->(obj){ (User === obj) ? obj : obj.user }   # ->{ Thread.current[:user].role }
+  limitable_owner do |obj, args| 
+    (User === obj) ? obj : (obj.user rescue Thread.current[:user])
+  end   # ->{ Thread.current[:user].role }
 
   # Specify how the role will be determined at runtime
-  limitable_role ->(owner){ owner.role }   # ->{ Thread.current[:user].role }
+  limitable_role do |owner|
+    owner.role rescue :public_user
+  end  # ->{ Thread.current[:user].role }
 
+  def limited_by_args_val params = {}
+    puts 'This will be marked up to always require 10,000 units in order to run'
+  end
 
-  limitable_methods :limited1, :limited2 
+  limitable_methods :limited1, :limited2, :static_method
+
+  limitable_method :limited_by_args_val do |obj, args| 
+    args[:val]
+  end
 end
 
 

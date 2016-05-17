@@ -1,7 +1,11 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
 require 'acts_as_limitable'
 require 'logger'
-require 'pry'
+require 'byebug'
+require 'rails/all'
+require 'rspec/rails'
+
+Rails.logger = Logger.new(STDOUT)
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
 ActiveRecord::Base.logger = Logger.new(File.join(File.dirname(__FILE__),'debug.log'))
