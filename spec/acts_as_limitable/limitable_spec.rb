@@ -8,13 +8,26 @@ describe ActsAsLimitable::Limitable do
   it "can set configuration via Hash" do 
     lm = LimitableModel.create 
 
-    expect(lm._limitable_thresholds).to eq( {"user" => { 1.second => 5, 1.hour => 100, 1.day => 1000}, 
-                                          "public_user" => { 1.second => 1, 1.hour => 25, 1.day => 100 } })
+    expect(lm._limitable_thresholds).to eq( 
+           {"default" => { "user" => { 1.second => 5, 1.hour => 100, 1.day => 1000}, 
+                          "public_user" => { 1.second => 1, 1.hour => 25, 1.day => 100 }},
+            "extremely_restricted"=>{"user"=>{1.second=>1, 3600.seconds=>1, 1.day=>1}, 
+                    "public_user"=>{1.second=>1, 3600.seconds=>1, 1.day=>1}}
+            })
   end
 
   it "can set configuration via method" do 
     lm = MethodConfiguredLimitedModel.create 
+  end
 
+  it "should not be able to do more than 1 extremely restricted call" do 
+    user_id += 1
+    user = User.create(id: user_id, name: "User_#{user_id}", role: "user") 
+    lm = LimitableModel.create(user: user)
+    lm.extremely_restricted
+    expect{
+      lm.extremely_restricted
+      }.to raise_error(Exception)
   end
 
   context "Can check for different amounts of availability based on a passed block" do 
@@ -61,7 +74,7 @@ strategies.each do |strat|
         expect{
           10.times do |x| 
             @resource.limited1
-            sleep(0.13)
+            sleep(0.1)
           end
         }.to raise_error(Exception)
       end
@@ -92,6 +105,7 @@ strategies.each do |strat|
           Thread.current[:user] = nil
         end
       end
+
     end
   end
 end

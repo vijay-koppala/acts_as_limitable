@@ -16,13 +16,14 @@ strategies.each do |strat|
     end
 
     it "can load existing state from db" do 
-      200.times do |x|
+      210.times do |x|
         strat.create(user: @public_user, created_at: (x * 200).seconds.ago) 
       end
       @public_user.reload
       method = strat.name.underscore.pluralize.to_sym 
-      expect(@public_user.send(method).size).to eq 200
-      @public_user.init_limiting
+      expect(@public_user.send(method).size).to eq 210
+      LimitableModel.init_limiting "limitable_model.limited1", @public_user, time_field: "at_time"
+
       @resource = strat.create(user: @public_user)
       expect{ @resource.limited1}.to raise_error(Exception)
     end

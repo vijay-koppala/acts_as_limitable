@@ -1,5 +1,7 @@
 require 'rubygems'
 require 'bundler'
+require 'rails/dummy/tasks'
+
 Bundler.setup :default, :development
 
 desc 'Default: run specs'

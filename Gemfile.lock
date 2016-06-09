@@ -82,6 +82,8 @@ GEM
       activesupport (>= 4.2.0.beta, < 5.0)
       nokogiri (~> 1.6.0)
       rails-deprecated_sanitizer (>= 1.0.1)
+    rails-dummy (0.0.4)
+      rails
     rails-html-sanitizer (1.0.3)
       loofah (~> 2.0)
     railties (4.2.5)
@@ -131,6 +133,7 @@ PLATFORMS
 DEPENDENCIES
   acts_as_limitable!
   byebug
+  rails-dummy
   rspec
   rspec-rails
   sqlite3

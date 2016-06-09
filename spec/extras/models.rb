@@ -9,12 +9,9 @@ class User < ActiveRecord::Base
   has_many :limitable_models
   has_many :method_configured_limited_models
 
-  def init_limiting
-    LimitableModel.init_limiting(self, time_field: "at_time")
-    MethodConfiguredLimitedModel.init_limiting(self, time_field: "at_time")
-  end
 end
 
+load "lib/generators/limit_definition/templates/limit_definition.rb"
 
 module TestMethods 
   module ClassMethods
@@ -52,7 +49,7 @@ class MethodConfiguredLimitedModel < ActiveRecord::Base
   end   # ->{ Thread.current[:user].role }
 
   # takes a user
-  def self.limit_resolver(user)
+  def self.limit_resolver(aspect, user)
     case (user.role rescue 'public_user')
     when "user" 
       { 1.second => 5, 1.hour => 100, 1.day => 1000}
@@ -79,8 +76,11 @@ class LimitableModel < ActiveRecord::Base
   # Specify per-role thresholds that will be respected by limiting logic
   #      role => { duration1 => quantity1, duration2 => quantity2 } 
   #
-  limitable_thresholds user: { 1.second => 5, 1.hour => 100, 1.day => 1000},
-                       public_user: { 1.second => 1, 1.hour => 25, 1.day => 100 }
+  limitable_thresholds default: {      user: { 1.second => 5, 1.hour => 100, 1.day => 1000},
+                                public_user: { 1.second => 1, 1.hour => 25, 1.day => 100 }},
+                       "extremely_restricted" =>  {user: { 1.second => 1, 1.hour => 1, 1.day => 1},
+                                public_user: { 1.second => 1, 1.hour => 1, 1.day => 1 }
+                       }
 
   # Specify how the role will be determined at runtime
   limitable_owner do |obj, args| 
@@ -96,11 +96,18 @@ class LimitableModel < ActiveRecord::Base
     puts 'This will be marked up to always require 10,000 units in order to run'
   end
 
+  def extremely_restricted
+    puts "extremely_restricted"
+  end
+
   limitable_methods :limited1, :limited2, :static_method
 
-  limitable_method :limited_by_args_val do |obj, args| 
+  limitable_method :limited_by_args_val, aspect: "other" do |obj, args| 
     args[:val]
   end
+
+  limitable_method :extremely_restricted, aspect: "extremely_restricted"
+
 end
 
 

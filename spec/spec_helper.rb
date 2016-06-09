@@ -11,9 +11,15 @@ ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":me
 ActiveRecord::Base.logger = Logger.new(File.join(File.dirname(__FILE__),'debug.log'))
 ActiveRecord::Base.logger.level = Logger::INFO
 
-
 load(File.dirname(__FILE__) + '/extras/schema.rb')
 load(File.dirname(__FILE__) + '/extras/models.rb')
+
+RSpec.configure do |config|
+  config.before(:each) do  
+    LimitDefinition.delete_all
+  end
+end
+
 
 unless [].respond_to?(:freq)
   class Array

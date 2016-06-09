@@ -1,0 +1,6 @@
+Description:
+    Copies limit_definition.rb to app/models/.
+    Copies create_limit_definition.rb to db/migrate
+
+Examples:
+    `rails generate limit_definition`

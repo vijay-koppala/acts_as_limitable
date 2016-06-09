@@ -21,10 +21,11 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'sqlite3'
   gem.add_development_dependency "rspec-rails"
+  gem.add_development_dependency "rails-dummy"
   
   #gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   #gem.files         = `git ls-files`.split("\n")
-  gem.files         = ["lib/acts_as_limitable.rb", "lib/acts_as_limitable/version.rb"]
+  gem.files         = `git ls-files`.split("\n")
   gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   gem.require_paths = ['lib']
   gem.version       = ActsAsLimitable::VERSION
