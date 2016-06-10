@@ -70,4 +70,19 @@ describe LimitDefinition, type: :model do
 
   end
 
+  context "will maintain ActiveSupport::Duration syntax" do 
+    # although hours and weeks are sometimes turned into seconds and weeks, the
+    # resulting expression should be another ActiveSupport::Duration
+    types = %w(second hour day week month seconds hours days weeks months)
+  
+    types.each_with_index do |type,idx|
+      it "can handle #{type}" do 
+        LimitDefinition.create_limits("test", config: {user: { (2.send(type)) => 2 }} )
+        expect(types.include?(LimitDefinition.first.interval_expression.split.last)).not_to be_nil
+        expect(LimitDefinition.first.interval_seconds).to eq (2.send(type).to_i)
+      end
+    end
+  end
+
+
 end

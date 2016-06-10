@@ -59,6 +59,9 @@ class LimitDefinition < ActiveRecord::Base
   def self.create_limits aspect, config: 
     config.each do |role, limits| 
       limits.each do |interval, allowance|
+        if ActiveSupport::Duration === interval 
+          interval = interval.inspect.gsub(" ", ".")
+        end
         LimitDefinition.create(     aspect: aspect, 
                                       role: role, 
                        interval_expression: interval, 
