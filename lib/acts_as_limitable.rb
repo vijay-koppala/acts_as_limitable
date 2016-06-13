@@ -10,8 +10,20 @@ module ActsAsLimitable
     require "acts_as_limitable/limitable"
   end
 
-  mattr_accessor :redis_client
-  @@redis_client ||= Redis.new
+  # Clients can set redis_host and redis_port 
+  mattr_accessor :redis_host
+  @@redis_host ||= "localhost"
+
+  mattr_accessor :redis_port
+  @@redis_port ||= 6379
+
+  # Call with force=true to guarantee a new connection to redis is returned
+  def self.redis_client(force=false)
+    if @@redis_client.blank? || force
+      @@redis_client ||= Redis.new(redis_host, redis_port)
+    end
+    @@redis_client
+  end
 
   def self.incr_bucket_val aspect, owner_id, at_time: , duration:, amount: 0
     bucket = "AAL_#{aspect}:#{owner_id}:#{duration}:#{(at_time.to_i / duration).to_i}"
