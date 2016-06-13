@@ -17,10 +17,12 @@ module ActsAsLimitable
   mattr_accessor :redis_port
   @@redis_port ||= 6379
 
+  mattr_accessor :redis_client
+
   # Call with force=true to guarantee a new connection to redis is returned
   def self.redis_client(force=false)
     if @@redis_client.blank? || force
-      @@redis_client ||= Redis.new(redis_host, redis_port)
+      @@redis_client ||= Redis.new(host:redis_host, port:redis_port)
     end
     @@redis_client
   end
