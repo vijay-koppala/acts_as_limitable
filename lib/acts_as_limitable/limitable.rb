@@ -164,7 +164,7 @@ module ActsAsLimitable
       end
 
       def _get_lookup_limits(aspect, role_or_owner)
-        if Hash === _limitable_thresholds
+        limits = if Hash === _limitable_thresholds
           unless (String === role_or_owner) || (Symbol === role_or_owner) 
             role_or_owner = role_or_owner.role if role_or_owner.respond_to?(:role)
           end
@@ -177,7 +177,8 @@ module ActsAsLimitable
           limits
         elsif Symbol === _limitable_thresholds 
           limits = send _limitable_thresholds, aspect, role_or_owner
-        end.clone
+        end
+        limits.present? ? limits.clone : {}
       end
 
       #

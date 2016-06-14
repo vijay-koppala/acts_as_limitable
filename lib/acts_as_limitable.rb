@@ -17,6 +17,9 @@ module ActsAsLimitable
   mattr_accessor :redis_port
   @@redis_port ||= 6379
 
+  mattr_accessor :redis_namespace
+  @@redis_namespace ||= ""
+
   mattr_accessor :redis_client
 
   # Call with force=true to guarantee a new connection to redis is returned
@@ -28,7 +31,9 @@ module ActsAsLimitable
   end
 
   def self.incr_bucket_val aspect, owner_id, at_time: , duration:, amount: 0
-    bucket = "AAL_#{aspect}:#{owner_id}:#{duration}:#{(at_time.to_i / duration).to_i}"
+    # Our keys may be long, but not troublingly so...
+    # http://adamnengland.com/2012/11/15/redis-performance-does-key-length-matter/
+    bucket = "#{redis_namespace}_AAL_#{aspect}:#{owner_id}:#{duration}:#{(at_time.to_i / duration).to_i}"
     Rails.logger.debug "ActsAsLimitable: Incrementing #{bucket} with amount[#{amount}]"
     redis_client.pipelined do
       if amount == -1
