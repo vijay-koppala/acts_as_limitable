@@ -12,7 +12,8 @@ describe ActsAsLimitable::Limitable do
            {"default" => { "user" => { 1.second => 5, 1.hour => 100, 1.day => 1000}, 
                           "public_user" => { 1.second => 1, 1.hour => 25, 1.day => 100 }},
             "extremely_restricted"=>{"user"=>{1.second=>1, 3600.seconds=>1, 1.day=>1}, 
-                    "public_user"=>{1.second=>1, 3600.seconds=>1, 1.day=>1}}
+                    "public_user"=>{1.second=>1, 3600.seconds=>1, 1.day=>1},
+                      "system" => {} }
             })
   end
 
@@ -28,6 +29,12 @@ describe ActsAsLimitable::Limitable do
     expect{
       lm.extremely_restricted
       }.to raise_error(Exception)
+  end
+
+  it "should be able to make unlimited calls with role 'system'" do 
+    user = User.create(id: user_id, name: "User_#{user_id}", role: "user") 
+    lm = LimitableModel.create(user: user)
+    1000.times { lm.limited1 }
   end
 
   context "Can check for different amounts of availability based on a passed block" do 

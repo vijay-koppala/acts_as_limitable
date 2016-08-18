@@ -74,7 +74,7 @@ class LimitDefinition < ActiveRecord::Base
   # Return the Limit configuration for a particular aspects role
   #
   def self.for_role aspect, role_name
-    limits_config(aspect)[role_name]
+    limits_config(aspect)[role_name] || {}    # return empty hash (NO LIMITS) if role_name is not found
   end
 
   private

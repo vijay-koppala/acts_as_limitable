@@ -170,10 +170,21 @@ module ActsAsLimitable
           end
           limits = from_limit_definitions aspect, role_or_owner     
           if limits.blank?
-            limits = _limitable_thresholds[aspect] || _limitable_thresholds["default"]
-            LimitDefinition.create_limits(aspect, config: limits)
-            limits = from_limit_definitions aspect, role_or_owner     
+            # Set limits config from code
+            _limit_config = _limitable_thresholds[aspect] || _limitable_thresholds["default"]
+            unless _limit_config[role_or_owner].blank?
+              LimitDefinition.create_limits(aspect, config: _limit_config)
+              limits = from_limit_definitions aspect, role_or_owner     
+            end
           end
+
+
+          # if limits.blank?
+          #   limits = _limitable_thresholds[aspect] || _limitable_thresholds["default"]
+          #   LimitDefinition.create_limits(aspect, config: limits)
+          #   limits = from_limit_definitions aspect, role_or_owner     
+          # end
+          
           limits
         elsif Symbol === _limitable_thresholds 
           limits = send _limitable_thresholds, aspect, role_or_owner

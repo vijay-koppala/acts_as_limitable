@@ -79,7 +79,8 @@ class LimitableModel < ActiveRecord::Base
   limitable_thresholds default: {      user: { 1.second => 5, 1.hour => 100, 1.day => 1000},
                                 public_user: { 1.second => 1, 1.hour => 25, 1.day => 100 }},
                        "extremely_restricted" =>  {user: { 1.second => 1, 1.hour => 1, 1.day => 1},
-                                public_user: { 1.second => 1, 1.hour => 1, 1.day => 1 }
+                                public_user: { 1.second => 1, 1.hour => 1, 1.day => 1 },
+                                system: {}
                        }
 
   # Specify how the role will be determined at runtime
