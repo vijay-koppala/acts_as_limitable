@@ -77,7 +77,8 @@ class LimitableModel < ActiveRecord::Base
   #      role => { duration1 => quantity1, duration2 => quantity2 } 
   #
   limitable_thresholds default: {      user: { 1.second => 5, 1.hour => 100, 1.day => 1000},
-                                public_user: { 1.second => 1, 1.hour => 25, 1.day => 100 }},
+                                public_user: { 1.second => 1, 1.hour => 25, 1.day => 100 },
+                                system: {}},
                        "extremely_restricted" =>  {user: { 1.second => 1, 1.hour => 1, 1.day => 1},
                                 public_user: { 1.second => 1, 1.hour => 1, 1.day => 1 },
                                 system: {}
