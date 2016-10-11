@@ -112,6 +112,8 @@ module ActsAsLimitable
             ActsAsLimitable.incr_bucket_vals("#{aspect}", owner_id, limits: limits, amount: amount)
             Rails.logger.debug {"ActsAsLimitable: allowed call to #{m}"}
             send :#{old_method}, *args, &block
+          else
+            return false
           end
         end
         END

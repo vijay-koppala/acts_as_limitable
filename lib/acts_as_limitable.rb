@@ -33,7 +33,9 @@ module ActsAsLimitable
   def self.incr_bucket_val aspect, owner_id, at_time: , duration:, amount: 0
     # Our keys may be long, but not troublingly so...
     # http://adamnengland.com/2012/11/15/redis-performance-does-key-length-matter/
-    bucket = "#{redis_namespace}_AAL_#{aspect}:#{owner_id}:#{duration}:#{(at_time.to_i / duration).to_i}"
+    bucket = "#{redis_namespace}_AAL_#{aspect}:#{owner_id}:#{duration}"
+    bucket = "#{bucket}:#{(at_time.to_i / duration.to_i)}" if ActiveSupport::Duration === duration
+
     Rails.logger.debug "ActsAsLimitable: Incrementing #{bucket} with amount[#{amount}]"
     redis_client.pipelined do
       if amount == -1
@@ -57,7 +59,7 @@ module ActsAsLimitable
 
   def self.incr_bucket_vals aspect, owner_id,at_time: Time.now.utc, limits:, amount: 1
     limits.each do |duration, limit|
-      response = incr_bucket_val(aspect,owner_id, at_time: Time.now.utc, duration: duration.to_i, 
+      response = incr_bucket_val(aspect,owner_id, at_time: Time.now.utc, duration: duration, 
           amount: amount)
     end
    end
@@ -67,7 +69,7 @@ module ActsAsLimitable
                             limits: [{1.seconds => 10}, {1.minutes => 120}, {1.hour => 240} ]
     error_message = nil
     limits.each do |duration, limit|
-      response = check_limit(aspect,owner_id, at_time: Time.now.utc, duration: duration.to_i, 
+      response = check_limit(aspect,owner_id, at_time: Time.now.utc, duration: duration, 
           limit: limit, amount: amount)
       if response == false
         error_message ||= "You can only make #{limit} calls every #{duration} second(s)"
