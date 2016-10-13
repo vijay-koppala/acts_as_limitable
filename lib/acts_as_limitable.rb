@@ -67,18 +67,22 @@ module ActsAsLimitable
   # Check multiple buckets
   def self.check_limit_multi aspect, owner_id, at_time: Time.now.utc, amount: 1,
                             limits: [{1.seconds => 10}, {1.minutes => 120}, {1.hour => 240} ]
-    error_message = nil
+    error_message  = nil
+    error_limit    = nil
+    error_duration = nil
     limits.each do |duration, limit|
       response = check_limit(aspect,owner_id, at_time: Time.now.utc, duration: duration, 
           limit: limit, amount: amount)
       if response == false
-        error_message ||= "You can only make #{limit} calls every #{duration} second(s)"
+        error_limit    ||= limit
+        error_duration ||= duration.to_i
+        error_message  ||= "You can only make #{limit} calls every #{duration.to_i} second(s)"
       end
     end
     if !error_message.nil?
       msg = "ActsAsLimitable: Rate limiting violated: #{error_message}"
       Rails.logger.warn msg
-      raise msg
+      raise Limitable::LimitExceededError.new(msg, error_limit, error_duration)
     end
     true
   end

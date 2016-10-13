@@ -32,6 +32,16 @@ module ActsAsLimitable
 
     end
 
+    class LimitExceededError < StandardError
+      attr_accessor :limit, :duration
+
+      def initialize msg, limit, duration
+        @limit = limit
+        @duration = duration
+        super(msg)
+      end
+    end
+
     module ClassMethods
 
 
@@ -112,8 +122,6 @@ module ActsAsLimitable
             ActsAsLimitable.incr_bucket_vals("#{aspect}", owner_id, limits: limits, amount: amount)
             Rails.logger.debug {"ActsAsLimitable: allowed call to #{m}"}
             send :#{old_method}, *args, &block
-          else
-            return false
           end
         end
         END
