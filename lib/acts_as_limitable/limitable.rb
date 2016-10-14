@@ -32,6 +32,16 @@ module ActsAsLimitable
 
     end
 
+    class LimitExceededError < StandardError
+      attr_accessor :limit, :duration
+
+      def initialize msg, limit, duration
+        @limit = limit
+        @duration = duration
+        super(msg)
+      end
+    end
+
     module ClassMethods
 
 
