@@ -79,7 +79,7 @@ class LimitDefinition < ActiveRecord::Base
 
   private
   def set_interval
-    self.interval_seconds = eval(interval_expression).to_i
+    self.interval_seconds = eval(interval_expression).to_i rescue 0
   end
 
   def clear_cache
