@@ -124,6 +124,7 @@ module ActsAsLimitable
             if (!!result == result && result) || (result.singleton_class.include?(ActiveModel::Validations) && result.errors.none?)
               ActsAsLimitable.incr_bucket_vals("#{aspect}", owner_id, limits: limits, amount: amount)
             end
+            result
           end
         end
         END
