@@ -119,9 +119,12 @@ module ActsAsLimitable
           Rails.logger.debug {"ActsAsLimitable: guarding #{m} unless \#{amount} are available"}
           owner_id = (owner.respond_to?(:id) ? owner.id : owner.to_s) rescue "public"
           if ActsAsLimitable.check_limit_multi("#{aspect}", owner_id, limits: limits, amount: amount)
-            ActsAsLimitable.incr_bucket_vals("#{aspect}", owner_id, limits: limits, amount: amount)
             Rails.logger.debug {"ActsAsLimitable: allowed call to #{m}"}
-            send :#{old_method}, *args, &block
+            result = send(:#{old_method}, *args, &block)
+            if (!!result == result && result) || (result.singleton_class.include?(ActiveModel::Validations) && result.errors.none?)
+              ActsAsLimitable.incr_bucket_vals("#{aspect}", owner_id, limits: limits, amount: amount)
+            end
+            result
           end
         end
         END

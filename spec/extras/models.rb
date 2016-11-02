@@ -25,9 +25,9 @@ module TestMethods
     base.extend ClassMethods                                                                                                                                                  
   end
 
-  def limited1;puts "limited1";end
-  def limited2;puts "limited2";end
-  def not_limited;print ".";end
+  def limited1;puts "limited1";true;end
+  def limited2;puts "limited2";true;end
+  def not_limited;print ".";true;end
 end
 
 
@@ -96,10 +96,12 @@ class LimitableModel < ActiveRecord::Base
 
   def limited_by_args_val params = {}
     puts 'This will be marked up to always require 10,000 units in order to run'
+    true
   end
 
   def extremely_restricted
     puts "extremely_restricted"
+    true
   end
 
   limitable_methods :limited1, :limited2, :static_method
