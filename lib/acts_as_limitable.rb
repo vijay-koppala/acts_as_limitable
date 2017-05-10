@@ -34,7 +34,7 @@ module ActsAsLimitable
     # Our keys may be long, but not troublingly so...
     # http://adamnengland.com/2012/11/15/redis-performance-does-key-length-matter/
     bucket = "#{redis_namespace}_AAL_#{aspect}:#{owner_id}:#{duration}"
-    bucket = "#{bucket}:#{(at_time.to_i / duration.to_i)}" if ActiveSupport::Duration === duration
+    bucket = "#{bucket}:#{(at_time.to_i / duration.to_i)}" if duration.to_i > 0
 
     Rails.logger.debug "ActsAsLimitable: Incrementing #{bucket} with amount[#{amount}]"
     redis_client.pipelined do
@@ -42,7 +42,7 @@ module ActsAsLimitable
         redis_client.del bucket 
       end
       @count = redis_client.incrby(bucket, amount)
-      redis_client.expire(bucket, duration)
+      redis_client.expire(bucket, duration.to_i)
     end
     return @count.value
   end    
@@ -67,26 +67,24 @@ module ActsAsLimitable
   # Check multiple buckets
   def self.check_limit_multi aspect, owner_id, at_time: Time.now.utc, amount: 1,
                             limits: [{1.seconds => 10}, {1.minutes => 120}, {1.hour => 240} ]
-    error_message  = nil
-    error_limit    = nil
-    error_duration = nil
-    limits.each do |duration, limit|
-      response = check_limit(aspect,owner_id, at_time: Time.now.utc, duration: duration, 
-          limit: limit, amount: amount)
-      if response == false
-        error_limit    ||= limit
-        error_duration ||= duration.to_i
-        error_message  ||= "You can only make #{limit} calls every #{duration.to_i} second(s)"
+    limit_error = catch(:limit_error) do
+       limits.each do |duration, limit|
+        response = check_limit(aspect,owner_id, at_time: Time.now.utc, duration: duration, 
+            limit: limit, amount: amount)
+
+        throw :limit_error, {
+          limit: limit, duration: duration, message: "You can only make #{limit} calls every #{duration.to_i} second(s)"
+        } if response == false
       end
+      nil
     end
-    if !error_message.nil?
-      msg = "ActsAsLimitable: Rate limiting violated: #{error_message}"
+
+    if limit_error.present?
+      msg = "ActsAsLimitable: Rate limiting violated: #{limit_error[:message]}"
       Rails.logger.warn msg
-      raise Limitable::LimitExceededError.new(msg, error_limit, error_duration)
+      raise Limitable::LimitExceededError.new(msg, limit_error[:limit], limit_error[:duration].to_i)
     end
+
     true
   end
-
-
-
 end
